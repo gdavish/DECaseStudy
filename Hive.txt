@@ -1,0 +1,213 @@
+========================================  Customer Table HIVE Create Non-Partitioned ===================================================
+Drop Table customer_temp;
+Create Table customer_temp
+(
+CUST_SSN LONG,
+CUST_F_NAME	STRING,
+CUST_M_NAME	STRING,
+CUST_L_NAME	STRING,
+CUST_CC_NO LONG,
+CUST_STREET	STRING,
+CUST_CITY STRING,
+CUST_STATE STRING,
+CUST_COUNTRY STRING,
+CUST_ZIP INT,
+CUST_PHONE STRING,
+CUST_EMAIL STRING
+)
+ROW FORMAT DELIMITED FIELDS TERMINATED BY ',' ESCAPED BY '"' LINES TERMINATED BY '\n';
+
+LOAD DATA INPATH  "/Credit_Card_System/CDW_SAPP_CUSTOMER" OVERWRITE INTO TABLE customer_temp;
+
+
+
+========================================  Customer Table HIVE Create Partitioned ===================================================
+
+SET hive.exec.dynamic.partition=true;
+SET hive.exec.dynamic.partition.mode=nonstrict;
+
+CREATE TABLE CDW_SAPP_CUSTOMER 
+(
+CUST_SSN LONG,
+CUST_F_NAME	STRING,
+CUST_M_NAME	STRING,
+CUST_L_NAME	STRING,
+CUST_CC_NO LONG,
+CUST_STREET	STRING,
+CUST_CITY STRING,
+CUST_COUNTRY STRING,
+CUST_STATE STRING,
+CUST_PHONE STRING,
+CUST_EMAIL STRING
+) 
+PARTITIONED BY (CUST_ZIP INT)
+ROW FORMAT DELIMITED FIELDS TERMINATED BY ',' ESCAPED BY '"' LINES TERMINATED BY '\n' 
+STORED AS textfile
+LOCATION "/user/maria_dev/CDW_SAPP_CUSTOMER";
+
+
+SET hive.exec.dynamic.partition=true;
+SET hive.exec.dynamic.partition.mode=nonstrict;
+
+INSERT OVERWRITE TABLE Customer
+PARTITION (CUST_ZIP)
+SELECT CUST_SSN,
+CUST_F_NAME,
+CUST_M_NAME,
+CUST_L_NAME,
+CUST_CC_NO,
+CUST_STREET,
+CUST_CITY,
+CUST_STATE,
+CUST_COUNTRY,
+CUST_ZIP,
+CUST_PHONE,
+CUST_EMAIL
+FROM customer_temp;
+=====================================BRANCH Table Hive Non-Partitioned =============================================
+Drop Table branch_temp;
+Create Table branch_temp
+(
+BRANCH_CODE INT,
+BRANCH_NAME STRING,
+BRANCH_STREET STRING,
+BRANCH_CITY	STRING,
+BRANCH_STATE STRING,
+BRANCH_ZIP INT,
+BRANCH_PHONE STRING,
+LAST_UPDATED TIMESTAMP
+)
+ROW FORMAT DELIMITED FIELDS TERMINATED BY ',' ESCAPED BY '"' LINES TERMINATED BY '\n';
+
+LOAD DATA INPATH  "/Credit_Card_System/CDW_SAPP_BRANCH" OVERWRITE INTO TABLE branch_temp;
+
+
+========================================  Branch Table HIVE Create Partitioned ===================================================
+SET hive.exec.dynamic.partition=true;
+SET hive.exec.dynamic.partition.mode=nonstrict;
+
+CREATE TABLE CDW_SAPP_BRANCH 
+(
+BRANCH_CODE INT,
+BRANCH_NAME STRING,
+BRANCH_STREET STRING,
+BRANCH_CITY	STRING,
+BRANCH_STATE STRING,
+BRANCH_PHONE STRING,
+LAST_UPDATED TIMESTAMP
+) 
+PARTITIONED BY (BRANCH_ZIP INT)
+ROW FORMAT DELIMITED FIELDS TERMINATED BY ',' ESCAPED BY '"' LINES TERMINATED BY '\n' 
+STORED AS textfile
+LOCATION "/user/maria_dev/CDW_SAPP_BRANCH";
+
+
+SET hive.exec.dynamic.partition=true;
+SET hive.exec.dynamic.partition.mode=nonstrict;
+
+INSERT OVERWRITE TABLE CDW_SAPP_BRANCH
+PARTITION (BRANCH_ZIP)
+SELECT BRANCH_CODE, 
+BRANCH_NAME, 
+BRANCH_STREET, 
+BRANCH_CITY, 
+BRANCH_STATE,
+BRANCH_ZIP,
+BRANCH_PHONE, 
+LAST_UPDATED
+FROM branch_temp;
+
+
+=====================================CREDIT CARD Table Hive Non-Partitioned =============================================
+Drop Table creditcard_temp;
+Create Table creditcard_temp
+(
+CUST_CC_NO LONG,
+TIMEID DATE,
+CUST_SSN LONG,
+BRANCH_CODE INT,
+TRANSACTION_TYPE STRING,
+TRANSACTION_VALUE STRING
+)
+ROW FORMAT DELIMITED FIELDS TERMINATED BY ',' ESCAPED BY '"' LINES TERMINATED BY '\n';
+
+LOAD DATA INPATH  "/Credit_Card_System/CDW_SAPP_CREDITCARD" OVERWRITE INTO TABLE creditcard_temp;
+
+
+========================================  CREDIT CARD Table HIVE Create Partitioned ===================================================
+SET hive.exec.dynamic.partition=true;
+SET hive.exec.dynamic.partition.mode=nonstrict;
+
+CREATE TABLE CDW_SAPP_CREDITCARD 
+(
+CUST_CC_NO LONG,
+TIMEID DATE,
+CUST_SSN LONG,
+TRANSACTION_TYPE STRING,
+TRANSACTION_VALUE STRING
+) 
+PARTITIONED BY (BRANCH_CODE INT)
+ROW FORMAT DELIMITED FIELDS TERMINATED BY ',' ESCAPED BY '"' LINES TERMINATED BY '\n' 
+STORED AS textfile
+LOCATION "/user/maria_dev/CDW_SAPP_CREDITCARD";
+
+
+SET hive.exec.dynamic.partition=true;
+SET hive.exec.dynamic.partition.mode=nonstrict;
+
+INSERT OVERWRITE TABLE CDW_SAPP_CREDITCARD
+PARTITION (BRANCH_CODE)
+SELECT CUST_CC_NO,
+TIMEID,
+CUST_SSN,
+BRANCH_CODE,
+TRANSACTION_TYPE,
+TRANSACTION_VALUE
+FROM creditcard_temp;
+
+===================================== TIME Table HIVE Create Non-Partitioned =============================================
+Drop Table time_temp;
+Create Table time_temp
+(
+TIMEID STRING,
+DAY STRING,
+MONTH STRING,
+QUARTER INT,
+YEAR STRING,
+
+)
+ROW FORMAT DELIMITED FIELDS TERMINATED BY ',' ESCAPED BY '"' LINES TERMINATED BY '\n';
+
+LOAD DATA INPATH  "/Credit_Card_System/CDW_SAPP_TIME" OVERWRITE INTO TABLE time_temp;
+
+
+
+======================================== TIME Table HIVE Create Partitioned ===================================================
+SET hive.exec.dynamic.partition=true;
+SET hive.exec.dynamic.partition.mode=nonstrict;
+
+CREATE TABLE CDW_SAPP_TIME 
+(
+TIMEID STRING,
+DAY STRING,
+MONTH STRING,
+YEAR STRING
+) 
+PARTITIONED BY (QUARTER INT)
+ROW FORMAT DELIMITED FIELDS TERMINATED BY ',' ESCAPED BY '"' LINES TERMINATED BY '\n' 
+STORED AS textfile
+LOCATION "/user/maria_dev/CDW_SAPP_TIME";
+
+
+SET hive.exec.dynamic.partition=true;
+SET hive.exec.dynamic.partition.mode=nonstrict;
+
+INSERT OVERWRITE TABLE CDW_SAPP_TIME
+PARTITION (QUARTER)
+SELECT  
+TIMEID,
+DAY,
+MONTH,
+QUARTER,
+YEAR
+FROM time_temp;

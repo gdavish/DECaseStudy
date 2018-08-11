@@ -1,0 +1,156 @@
+
+========================================  Customer Table HIVE Sqoop Import (optional) ===================================================
+
+
+sqoop import --connect jdbc:mysql://localhost/CDW_SAPP --driver com.mysql.jdbc.Driver --username root --password password 
+--query "SELECT SSN AS CUST_SSN,
+ CONCAT(UCASE(MID(FIRST_NAME,1,1)),MID(FIRST_NAME,2)) AS CUST_F_NAME,
+ LOWER(MIDDLE_NAME) AS CUST_M_NAME, 
+ CONCAT(UCASE(MID(LAST_NAME,1,1)),MID(LAST_NAME,2)) AS CUST_L_NAME,
+ CREDIT_CARD_NO AS CUST_CC_NO, 
+ CONCAT(STREET_NAME, ' ',APT_NO) AS CUST_STREET, 
+ CUST_CITY,
+ CUST_STATE,
+ CUST_COUNTRY,
+ CAST(CUST_ZIP AS UNSIGNED) AS CUST_ZIP,
+ CONCAT(SUBSTRING(CUST_PHONE,1,3),  '-', SUBSTRING(CUST_PHONE,4,4)) AS CUST_PHONE,
+ CUST_EMAIL,
+ LAST_UPDATED
+ FROM CDW_SAPP_CUSTOMER  WHERE \$CONDITIONS "
+--split-by CUST_ZIP
+--target-dir /user/maria_dev/casestudy/ --hive-import 
+--hive-database default 
+--hive-table CDW_SAPP_CUSTOMER
+--create-hive-table 
+--fields-terminated-by ','
+
+
+
+========================================  Customer Table HDFS sqoop import ===================================================
+
+sqoop import --connect jdbc:mysql://localhost/CDW_SAPP --driver com.mysql.jdbc.Driver --username root --password password 
+--query "SELECT SSN AS CUST_SSN,
+ CONCAT(UCASE(MID(FIRST_NAME,1,1)),MID(FIRST_NAME,2)) AS CUST_F_NAME,
+ LOWER(MIDDLE_NAME) AS CUST_M_NAME, 
+ CONCAT(UCASE(MID(LAST_NAME,1,1)),MID(LAST_NAME,2)) AS CUST_L_NAME,
+ CREDIT_CARD_NO AS CUST_CC_NO, 
+ CONCAT(STREET_NAME, ' ',APT_NO) AS CUST_STREET, 
+ CUST_CITY,
+ CUST_STATE,
+ CUST_COUNTRY,
+ CAST(CUST_ZIP AS UNSIGNED) AS CUST_ZIP,
+ CONCAT(SUBSTRING(CUST_PHONE,1,3),  '-', SUBSTRING(CUST_PHONE,4,4)) AS CUST_PHONE,
+ CUST_EMAIL,
+ LAST_UPDATED
+ FROM CDW_SAPP_CUSTOMER  WHERE \$CONDITIONS "
+--split-by CUST_ZIP
+--target-dir /Credit_Card_System/CDW_SAPP_CUSTOMER 
+--fields-terminated-by ','
+
+=====================================BRANCH Table HDFS =============================================
+
+sqoop import --connect jdbc:mysql://localhost/CDW_SAPP --driver com.mysql.jdbc.Driver --username root --password password 
+--query "SELECT BRANCH_CODE, 
+BRANCH_NAME, 
+BRANCH_STREET, 
+BRANCH_CITY, 
+BRANCH_STATE, 
+IFNULL(BRANCH_ZIP, 99999) AS BRANCH_ZIP,
+CONCAT('(' , SUBSTRING(BRANCH_PHONE, 1, 3), ')' , SUBSTRING(BRANCH_PHONE, 4, 3),'-' ,
+SUBSTRING(BRANCH_PHONE, 7, 4)) AS BRANCH_PHONE, 
+LAST_UPDATED
+FROM CDW_SAPP_BRANCH
+WHERE \$CONDITIONS "
+--split-by BRANCH_ZIP
+--target-dir /Credit_Card_System/CDW_SAPP_BRANCH 
+--fields-terminated-by ','
+
+
+=====================================BRANCH Table HIVE (optional) =============================================
+sqoop import --connect jdbc:mysql://localhost/CDW_SAPP --driver com.mysql.jdbc.Driver --username root --password password 
+--query "SELECT 
+BRANCH_CODE, 
+BRANCH_NAME, 
+BRANCH_STREET, 
+BRANCH_CITY, 
+BRANCH_STATE, 
+IFNULL(BRANCH_ZIP, 99999) AS BRANCH_ZIP,
+CONCAT('(' , SUBSTRING(BRANCH_PHONE, 1, 3), ')' , SUBSTRING(BRANCH_PHONE, 4, 3),'-' ,
+SUBSTRING(BRANCH_PHONE, 7, 4)) AS BRANCH_PHONE, 
+LAST_UPDATED
+FROM CDW_SAPP_BRANCH
+WHERE \$CONDITIONS "
+--split-by BRANCH_ZIP
+--target-dir /user/maria_dev/casestudy/ --hive-import 
+--hive-database default 
+--hive-table CDW_SAPP_BRANCH
+--create-hive-table 
+--fields-terminated-by ','
+
+
+=====================================CREDIT CARD Table HDFS =============================================
+sqoop import --connect jdbc:mysql://localhost/CDW_SAPP --driver com.mysql.jdbc.Driver --username root --password password 
+--query "SELECT CREDIT_CARD_NO AS CUST_CC_NO, 
+CONCAT(YEAR, LPAD(MONTH, 2, '0'), LPAD(DAY, 2, '0')) AS TIMEID,
+CUST_SSN, 
+BRANCH_CODE, 
+TRANSACTION_TYPE, 
+TRANSACTION_VALUE
+FROM CDW_SAPP_CREDITCARD
+WHERE \$CONDITIONS "
+--split-by BRANCH_CODE
+--target-dir /Credit_Card_System/CDW_SAPP_CREDITCARD 
+--fields-terminated-by ','
+
+
+=====================================CREDIT CARD Table HIVE (optional) =============================================
+
+sqoop import --connect jdbc:mysql://localhost/CDW_SAPP --driver com.mysql.jdbc.Driver --username root --password password 
+--query "SELECT CREDIT_CARD_NO AS CUST_CC_NO, 
+CONCAT(YEAR, LPAD(MONTH, 2, '0'), 
+LPAD(DAY, 2, '0')) AS TIMEID,
+CUST_SSN, 
+BRANCH_CODE, 
+TRANSACTION_TYPE, 
+TRANSACTION_VALUE
+FROM CDW_SAPP_CREDITCARD
+WHERE \$CONDITIONS "
+--split-by BRANCH_CODE
+--target-dir /user/maria_dev/casestudy/ --hive-import 
+--hive-database default 
+--hive-table CDW_SAPP_CREDITCARD
+--create-hive-table 
+--fields-terminated-by ','
+
+
+
+
+
+===================================== TIMEID Table HIVE(optional) =============================================
+
+sqoop import --connect jdbc:mysql://localhost/CDW_SAPP --driver com.mysql.jdbc.Driver --username root --password password 
+--query "SELECT CONCAT(YEAR, LPAD(MONTH, 2, '0'), LPAD(DAY, 2, '0')) AS TIMEID, 
+DAY, 
+MONTH, 
+QUARTER(CONCAT(YEAR, LPAD(MONTH, 2, '0'), LPAD(DAY, 2, '0'))) AS QUARTER,
+YEAR 
+FROM CDW_SAPP_CREDITCARD
+WHERE \$CONDITIONS "
+--split-by MONTH
+--target-dir /user/maria_dev/casestudy/ --hive-import 
+--hive-database default 
+--hive-table CDW_SAPP_TIME
+--create-hive-table 
+--fields-terminated-by ','
+
+
+===================================== TIMEID Table HDFS =============================================
+
+sqoop import --connect jdbc:mysql://localhost/CDW_SAPP --driver com.mysql.jdbc.Driver --username root --password password 
+--query "SELECT CONCAT(YEAR, LPAD(MONTH, 2, '0'), LPAD(DAY, 2, '0')) AS TIMEID, DAY, MONTH, QUARTER(CONCAT(YEAR, LPAD(MONTH, 2, '0'), LPAD(DAY, 2, '0'))) AS QUARTER,
+ YEAR 
+FROM CDW_SAPP_CREDITCARD
+WHERE \$CONDITIONS "
+--split-by MONTH
+--target-dir /Credit_Card_System/CDW_SAPP_TIME 
+--fields-terminated-by ','
