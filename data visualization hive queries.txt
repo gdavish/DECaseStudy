@@ -1,0 +1,7 @@
+1. SELECT branch_zip, sum(transaction_value) from cdw_sapp_branch, cdw_sapp_creditcard
+group by BRANCH_ZIP
+order by sum(TRANSACTION_VALUE) desc
+limit 20;
+
+2. select sum(transaction_value) from cdw_sapp_branch, cdw_sapp_time
+group by quarter and transaction_type;
